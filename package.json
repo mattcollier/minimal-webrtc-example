@@ -1,0 +1,18 @@
+{
+  "name": "webrtc",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "lib/main.js",
+  "scripts": {
+    "start": "node lib/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "delay": "^4.3.0",
+    "readline-promise": "^1.0.4",
+    "wrtc": "^0.4.5"
+  }
+}

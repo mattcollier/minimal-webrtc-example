@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WebRTC Browser to Node Demo</title>
+    <script>
+      const configuration = {
+        'iceServers': [{'urls': 'stun:stun.l.google.com:19302'}]
+      };
+      const peerConnection = new RTCPeerConnection(configuration);
+      console.log('initialized peerConnection');
+      async function funcOne({offerText}) {
+        const offer = JSON.parse(offerText);
+        peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+
+        // setup data channel
+        let dataChannel = null;
+        let interval = null;
+
+        function onMessage({ data }) {
+          console.log('ZZZZZZZZZZ', data);
+          if (data === 'pong') {
+            console.log('received pong');
+          }
+        }
+
+        function onDataChannel({channel}) {
+          if (channel.label !== 'ping-pong') {
+            return;
+          }
+
+          dataChannel = channel;
+          dataChannel.addEventListener('message', onMessage);
+        }
+        peerConnection.addEventListener('datachannel', onDataChannel);
+
+        const answerString = JSON.stringify(answer);
+        console.log('You clicked me, answer:', answerString);
+        document.getElementById('answer').value = answerString;
+
+        // // Listen for local ICE candidates on the local RTCPeerConnection
+        // peerConnection.addEventListener('icecandidate', event => {
+        //     if (event.candidate) {
+        //         signalingChannel.send({'new-ice-candidate': event.candidate});
+        //     }
+        // });
+
+
+        // Listen for remote ICE candidates and add them to the local RTCPeerConnection
+        // signalingChannel.addEventListener('message', async message => {
+        //     if (message.iceCandidate) {
+        //         try {
+        //             await peerConnection.addIceCandidate(message.iceCandidate);
+        //         } catch (e) {
+        //             console.error('Error adding received ice candidate', e);
+        //         }
+        //     }
+        // });
+      };
+    </script>
+</head>
+<body>
+  <h4>
+    Paste Offer from Server
+  </h4>
+  <textarea id="peerData" name="peerData" rows="20" cols="150"></textarea>
+  <button onClick="funcOne({
+    offerText: document.getElementById('peerData').value
+  });">Click Me</button>
+  <hr>
+  <h4>
+    Copy Answer
+  </h4>
+  <textarea id="answer" name="answer" rows="10" cols="150"></textarea>
+</body>
